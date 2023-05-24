@@ -1,8 +1,9 @@
 #include "BitcoinExchange.hpp"
-#include "Date.hpp"
 
 #include <fstream>
 #include <iostream>
+
+#include "Date.hpp"
 
 // Orthodox Canonical Form
 BitcoinExchange::BitcoinExchange() {}
@@ -44,7 +45,11 @@ BitcoinExchange::BitcoinExchange(const std::string& filename) {
     std::string date = line.substr(0, pos);
     std::string rate = line.substr(pos + 1);
     // Validate date
-    validateDate(date);
+    try {
+      Date d(date);
+    } catch (Date::Exception& e) {
+      throw Exception(e.what());
+    }
     // check duplicate
     if (_rates.find(date) != _rates.end()) {
       throw Exception("Duplicate date " + date);
@@ -77,31 +82,23 @@ double BitcoinExchange::getRate(const std::string& date) const {
   if (it == _rates.begin()) {
     throw Exception("Invalid date " + date);
   }
-  --it ;
+  --it;
   return it->second;
 }
 
-// Date Validation
-void BitcoinExchange::validateDate(std::string const& date) throw(BitcoinExchange::Exception) {
-  try {
-    Date d(date);
-  } catch (Date::Exception& e) {
-    throw Exception(e.what());
-  }
-}
-
 // Rate Validation
-double BitcoinExchange::stringToDouble(const std::string& str) throw(BitcoinExchange::Exception) {
+double BitcoinExchange::stringToDouble(const std::string& str) throw(
+    BitcoinExchange::Exception) {
   if (str.empty()) {
     throw Exception("Invalid string(empty)");
   }
-  char *endptr;
-  errno = 0 ;
+  char* endptr;
+  errno = 0;
   double value = std::strtod(str.c_str(), &endptr);
   if (*endptr != '\0') {
     throw Exception("Invalid string " + str);
   }
-  if ( errno == ERANGE ) {
+  if (errno == ERANGE) {
     throw Exception("Invalid string(overflow) " + str);
   }
   return value;
