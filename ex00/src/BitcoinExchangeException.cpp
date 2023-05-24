@@ -11,5 +11,5 @@ BitcoinExchange::Exception& BitcoinExchange::Exception::operator=(
   }
   return *this;
 }
-BitcoinExchange::Exception::~Exception() {}
-const std::string& BitcoinExchange::Exception::what() const { return _msg; }
+BitcoinExchange::Exception::~Exception() throw() {}
+const char* BitcoinExchange::Exception::what() const throw() { return _msg.c_str(); }

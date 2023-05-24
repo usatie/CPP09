@@ -31,7 +31,7 @@ debug: CXXFLAGS += -D DEBUG
 debug: re
 
 run: $(NAME)
-	./$(NAME)
+	./$(NAME) input.csv
 
 leakcheck: $(NAME)
 	leaks --atExit -q -- ./$(NAME)

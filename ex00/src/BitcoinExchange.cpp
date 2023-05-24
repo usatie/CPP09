@@ -1,9 +1,8 @@
 #include "BitcoinExchange.hpp"
+#include "Date.hpp"
 
 #include <fstream>
 #include <iostream>
-
-static bool isValidDate(std::string const& date) ;
 
 // Orthodox Canonical Form
 BitcoinExchange::BitcoinExchange() {}
@@ -22,7 +21,6 @@ BitcoinExchange::~BitcoinExchange() {}
 // Constructor
 BitcoinExchange::BitcoinExchange(const std::string& filename) {
   // read file
-  std::cout << "Reading file " << filename << std::endl;
   std::ifstream file(filename.c_str());
   if (!file.is_open()) {
     throw Exception("Could not open file " + filename);
@@ -38,27 +36,22 @@ BitcoinExchange::BitcoinExchange(const std::string& filename) {
   }
   // parse data
   while (std::getline(file, line)) {
+    // Parse line
     std::string::size_type pos = line.find(',');
     if (pos == std::string::npos) {
       throw Exception("Could not parse line " + line);
     }
     std::string date = line.substr(0, pos);
-    if (!isValidDate(date)) {
-      throw Exception("Invalid date " + date);
-    }
     std::string rate = line.substr(pos + 1);
-    if (rate.empty()) {
-      throw Exception("Invalid rate(empty)");
+    // Validate date
+    validateDate(date);
+    // check duplicate
+    if (_rates.find(date) != _rates.end()) {
+      throw Exception("Duplicate date " + date);
     }
-    char *endptr;
-    errno = 0 ;
-    _rates[date] = std::strtod(rate.c_str(), &endptr);
-    if (*endptr != '\0') {
-      throw Exception("Invalid rate " + rate);
-    }
-    if ( errno == ERANGE ) {
-      throw Exception("Invalid rate(overflow) " + rate);
-    }
+    // Validate rate
+    _rates[date] = stringToDouble(rate);
+    // check negative rate
     if (_rates[date] < 0) {
       throw Exception("Invalid rate(negative) " + rate);
     }
@@ -79,75 +72,27 @@ std::ostream& operator<<(std::ostream& os, const BitcoinExchange& b) {
 }
 
 // Date Validation
-static bool isDigit(std::string const& number) {
-  for (std::string::size_type i = 0; i < number.size(); ++i) {
-    if (!std::isdigit(number[i])) {
-      return false;
-    }
+void BitcoinExchange::validateDate(std::string const& date) throw(BitcoinExchange::Exception) {
+  try {
+    Date d(date);
+  } catch (Date::Exception& e) {
+    throw Exception(e.what());
   }
-  return true;
 }
 
-static bool isLeapYear(int year) {
-  if (year % 4 != 0) {
-    return false;
+// Rate Validation
+double BitcoinExchange::stringToDouble(const std::string& str) throw(BitcoinExchange::Exception) {
+  if (str.empty()) {
+    throw Exception("Invalid string(empty)");
   }
-  if (year % 100 != 0) {
-    return true;
+  char *endptr;
+  errno = 0 ;
+  double value = std::strtod(str.c_str(), &endptr);
+  if (*endptr != '\0') {
+    throw Exception("Invalid string " + str);
   }
-  if (year % 400 != 0) {
-    return false;
+  if ( errno == ERANGE ) {
+    throw Exception("Invalid string(overflow) " + str);
   }
-  return true;
+  return value;
 }
-
-static int daysInMonth(int year, int month) {
-  if (month == 2) {
-    if (isLeapYear(year)) {
-      return 29;
-    }
-    return 28;
-  }
-  if (month == 4 || month == 6 || month == 9 || month == 11) {
-    return 30;
-  }
-  return 31;
-}
-
-// A valid date will always be in the following format: Year-Month-Day
-// For example: 2014-01-01
-static bool isValidDate(std::string const& date) {
-  // Check if date is in the format Year-Month-Day
-  if (date.size() != 10) {
-    return false;
-  }
-  if (date[4] != '-' || date[7] != '-') {
-    return false;
-  }
-  // Extract year, month and day
-  std::string year = date.substr(0, 4);
-  std::string month = date.substr(5, 2);
-  std::string day = date.substr(8, 2);
-  // Check if year, month and day are digits
-  if (!isDigit(year) || !isDigit(month) || !isDigit(day)) {
-    return false;
-  }
-  // No error checking for atoi here, because we already checked the strings
-  int y = std::atoi(year.c_str());
-  int m = std::atoi(month.c_str());
-  int d = std::atoi(day.c_str());
-  // Check if month is valid
-  if (m < 1 || m > 12) {
-    return false;
-  }
-  // Check if day is valid
-  if (d < 1 || d > daysInMonth(y, m)) {
-    return false;
-  }
-  // Bitcoin exchange rate data starts on 2009-01-03
-  if (y < 2009 || (y == 2009 && m == 1 && d < 3)) {
-    return false;
-  }
-  return true;
-}
-
