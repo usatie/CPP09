@@ -71,6 +71,16 @@ std::ostream& operator<<(std::ostream& os, const BitcoinExchange& b) {
   return os;
 }
 
+// Rate Getter
+double BitcoinExchange::getRate(const std::string& date) const {
+  std::map<std::string, double>::const_iterator it = _rates.upper_bound(date);
+  if (it == _rates.begin()) {
+    throw Exception("Invalid date " + date);
+  }
+  --it ;
+  return it->second;
+}
+
 // Date Validation
 void BitcoinExchange::validateDate(std::string const& date) throw(BitcoinExchange::Exception) {
   try {

@@ -46,16 +46,34 @@ void parseLine(const std::string &line, std::string &date, float &value) {
 }
 
 void run(const BitcoinExchange &exchange, std::ifstream &file ) {
-  (void)exchange;
   std::string line ;
+  // parse header
+  if (!std::getline(file, line)) {
+    throw BitcoinExchange::Exception("Could not read header");
+  }
+  if (line != "date | value") {
+    throw BitcoinExchange::Exception("Invalid header");
+  }
+  // parse data
   while (std::getline(file, line)) {
     std::string date;
     float value;
     try {
       parseLine(line, date, value);
-      std::cout << date << " " << value << std::endl;
+      double rate = exchange.getRate(date);
+      std::cout
+        << date
+        << " => "
+        << rate * value
+        << std::endl;
     } catch (const std::exception& e) {
-      std::cerr << "Error: " << e.what() << std::endl;
+      std::cerr
+        << "Error: "
+        << e.what()
+        << ": \""
+        << line
+        << "\""
+        << std::endl;
       continue;
     }
   }
