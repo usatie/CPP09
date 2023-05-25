@@ -1,44 +1,42 @@
 #include <iomanip>
 #include <iostream>
+#include "RPN.hpp"
 
-#define RESET "\033[m"
-#define GREEN "\033[0;32m"
-#define RED "\033[0;31m"
-#define BOLD "\033[1m"
+static int run(char* exp) ;
 
-// print title in green color surrounded by '='
-void printTitle(std::string const& title) {
-  // set color to green
-  std::cout << GREEN << BOLD;
-  // print '='
-  std::cout << std::setfill('=') << std::setw(80) << "" << std::endl;
-  // print title at the center
-  std::cout << std::setfill(' ') << std::setw(40 - title.length() / 2) << ""
-            << title << std::endl;
-  // print '='
-  std::cout << std::setfill('=') << std::setw(80) << "" << std::endl;
-  // reset color
-  std::cout << RESET << std::setfill(' ') << std::setw(0);
+int main(int argc, char** argv) {
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <expression>" << std::endl ;
+    return 1 ;
+  }
+  return run(argv[1]) ;
 }
 
-// print test subtitle in white color surrounded by '-'
-void printSubtitle(std::string const& subtitle) {
-  // print '-'
-  std::cout << std::setfill('-') << std::setw(80) << "" << std::endl;
-  // print subtitle at the center
-  std::cout << std::setfill(' ') << std::setw(40 - subtitle.length() / 2) << ""
-            << subtitle << std::endl;
-  // print '-'
-  std::cout << std::setfill('-') << std::setw(80) << "" << std::endl;
-  // reset color
-  std::cout << RESET << std::setfill(' ') << std::setw(0);
-}
-
-void test_from_subject() {
-  printTitle("Test from sunject pdf");
-}
-
-int main(void) {
-  test_from_subject();
-  return 0;
+static int run(char *exp) {
+  RPN rpn ;
+  while (*exp) {
+    if (*exp == ' ') {
+      exp++ ;
+      continue ;
+    }
+    try {
+      rpn.push(*exp++) ;
+    } catch (std::exception& e) {
+      std::cerr << e.what() << std::endl ;
+      return 1;
+    }
+  }
+  // The stack should not be empty
+  if (rpn.size() == 0) {
+    std::cerr << "Error: Empty expression" << std::endl ;
+    return 1 ;
+  }
+  // The stack should have only one element at the end
+  if (rpn.size() != 1) {
+    std::cerr << "Error: Extra operands or insufficient operators" << std::endl ;
+    return 1 ;
+  }
+  // Print the result
+  std::cout << rpn.top() << std::endl ;
+  return 0 ;
 }
