@@ -31,10 +31,12 @@ debug: CXXFLAGS += -D DEBUG
 debug: re
 
 run: $(NAME)
-	./$(NAME) input.csv
+	./$(NAME) tests/input.csv
+	./$(NAME) tests/invalid_date.csv
+	./$(NAME) tests/invalid_header.csv
 
 leakcheck: $(NAME)
-	leaks --atExit -q -- ./$(NAME)
+	leaks --atExit -q -- ./$(NAME) tests/input.csv
 
 format:
 	clang-format -style=google $(SRCS) $(INCLUDES) -i

@@ -67,6 +67,7 @@ void run(const BitcoinExchange &exchange, std::ifstream &file) {
       float value;
       parseLine(line, date, value);
       double rate = exchange.getRate(date);
+      // Default precision is 6
       std::cout << date << " => " << rate * value << std::endl;
     } catch (const std::exception &e) {
       // limit line length to 80 characters

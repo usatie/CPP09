@@ -20,7 +20,7 @@ Date::~Date() {}
 
 // Constructor
 void Date::validate() const throw(Date::Exception) {
-  if (year < 1970 || year > 2037) {
+  if (year < 0 || year > 9999) {
     throw Date::Exception("Invalid year " + std::to_string(year));
   }
   if (month < 1 || month > 12) {

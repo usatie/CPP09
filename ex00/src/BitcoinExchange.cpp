@@ -80,7 +80,7 @@ std::ostream& operator<<(std::ostream& os, const BitcoinExchange& b) {
 double BitcoinExchange::getRate(const std::string& date) const {
   std::map<std::string, double>::const_iterator it = _rates.upper_bound(date);
   if (it == _rates.begin()) {
-    throw Exception("Invalid date " + date);
+    throw Exception("Rate not found for " + date);
   }
   --it;
   return it->second;
