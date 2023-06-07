@@ -32,6 +32,16 @@ debug: re
 
 run: $(NAME)
 	./$(NAME)
+	./$(NAME) `jot -r 1 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 2 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 3 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 4 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 5 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 21 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 100 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 1000 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 10000 1 100000 | tr '\n' ' '` | tail -n +3
+	./$(NAME) `jot -r 50000 1 100000 | tr '\n' ' '` | tail -n +3
 
 leakcheck: $(NAME)
 	leaks --atExit -q -- ./$(NAME)
