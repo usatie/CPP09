@@ -217,9 +217,7 @@ void PMergeMe::sort_impl(
   for (vector_iterator_t chain_it = chain.begin() ; chain_it != chain.end() ; ++chain_it) {
     // insert full elements to temp
     GroupIterator it = *chain_it ;
-    Iterator begin = it.base() ;
-    Iterator end = begin + it.size() ;
-    temp.insert(temp.end(), begin, end) ;
+    temp.insert(temp.end(), it.base(), it.base() + it.size()) ;
   }
 #if DEBUG
   std::cout << "temp  : " ;

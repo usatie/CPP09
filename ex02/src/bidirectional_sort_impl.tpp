@@ -191,9 +191,7 @@ void PMergeMe::sort_impl(
     // If this function has reference to the original container,
     // splice can be used. And the function can be made faster.
     GroupIterator it = *chain_it ;
-    Iterator begin = it.base() ;
-    Iterator end = std::next(begin, it.size()) ;
-    temp.insert(temp.end(), begin, end) ;
+    temp.insert(temp.end(), it.base(), std::next(it.base(), it.size())) ;
   }
 #if DEBUG
   std::cout << "temp: " ;
