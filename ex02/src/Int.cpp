@@ -3,7 +3,7 @@
 long Int::comp_count = 0;
 
 Int::Int(int data) : data(data) {}
-Int::Int(const Int& i): data(i.data) {}
+Int::Int(const Int& i) : data(i.data) {}
 Int& Int::operator=(const Int& i) {
   data = i.data;
   return *this;

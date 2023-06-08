@@ -4,8 +4,8 @@
 #include <iostream>
 #include <numeric>
 
-#include "PMergeMe.hpp"
 #include "Int.hpp"
+#include "PMergeMe.hpp"
 
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 #define CLOCKS_PER_US (CLOCKS_PER_SEC / 1000000)
@@ -36,14 +36,13 @@ void print_elapsed(std::clock_t elapsed) {
 // Test the sort function
 template <typename T>
 void test_sort(std::vector<T>& orig) {
+  std::vector<T> v(orig);
+  std::list<T> l(orig.begin(), orig.end());
   std::cout << "Before: " << orig << std::endl;
   {
-    std::vector<T> v(orig);
-    std::vector<T> v2(orig);
-    std::list<T> l(orig.begin(), orig.end());
-
     std::clock_t elapsed_vec, elapsed_list;
 #if BENCH
+    std::vector<T> v2(orig);
     std::clock_t elapsed_std_sort;
     long comp_count_fjmi, comp_count_std_sort;
 #endif
@@ -77,15 +76,15 @@ void test_sort(std::vector<T>& orig) {
     }
 #endif
     std::cout << "After:  " << v << std::endl;
-    std::cout << "Time to process a range of " << std::setw(8) << v.size()
-              << " elements with std::vector : " ;
+    std::cout << "Time to process a range of " << std::setw(8) << orig.size()
+              << " elements with std::vector : ";
     print_elapsed(elapsed_vec);
-    std::cout << "Time to process a range of " << std::setw(8) << v.size()
-              << " elements with std::list   : " ;
+    std::cout << "Time to process a range of " << std::setw(8) << orig.size()
+              << " elements with std::list   : ";
     print_elapsed(elapsed_list);
 #if BENCH
-    std::cout << "Time to process a range of " << std::setw(8) << v.size()
-              << " elements with std::sort   : " ;
+    std::cout << "Time to process a range of " << std::setw(8) << orig.size()
+              << " elements with std::sort   : ";
     print_elapsed(elapsed_std_sort);
     std::cout << "Number of comparisons with Ford-Johnson Algorithm : "
               << std::setw(8) << comp_count_fjmi << std::endl;
@@ -125,33 +124,24 @@ int stringToDouble(const std::string& str) throw(std::exception) {
 }
 
 int main(int argc, char* argv[]) {
+#if BENCH
   std::vector<Int> orig;
+#else
+  std::vector<int> orig;
+#endif
+
   for (int i = 1; i < argc; ++i) {
     try {
+#if BENCH
       orig.push_back(Int(stringToDouble(argv[i])));
+#else
+      orig.push_back(stringToDouble(argv[i]));
+#endif
     } catch (std::exception& e) {
       std::cerr << "Error: " << e.what() << std::endl;
       return 1;
     }
   }
   test_sort(orig);
-
-  /*
-  int sizes[] = { 0, 1, 2, 4, 8, 100, 1000, 10000 } ;
-  for (size_t i = 0 ; i < sizeof(sizes) / sizeof(sizes[0]) ; ++i) {
-    std::vector<int> orig(sizes[i]) ;
-    std::iota(orig.begin(), orig.end(), 0) ;
-    std::random_shuffle(orig.begin(), orig.end()) ;
-  //std::vector<int> orig(100) ;
-  //std::iota(orig.begin(), orig.end(), 0) ;
-  //std::random_shuffle(orig.begin(), orig.end()) ;
-  //std::vector<int> orig ;
-  //for (int i = 0; i < 100; ++i) {
-  //  orig.push_back(rand() % 100) ;
-  //}
-    std::cout << "size(" << sizes[i] << ") " << std::endl ;
-    test_sort(orig) ;
-  }
-  */
   return 0;
 }
