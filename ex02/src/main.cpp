@@ -5,40 +5,12 @@
 #include <numeric>
 
 #include "PMergeMe.hpp"
+#include "Int.hpp"
 
-class Int {
- public:
-  static long comp_count;
-  int data;
-  explicit Int(int data) : data(data) {}
-  bool operator<(const Int& rhs) const {
-    comp_count++;
-    return data < rhs.data;
-  }
-  bool operator>(const Int& rhs) const {
-    comp_count++;
-    return data > rhs.data;
-  }
-};
+#define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
+#define CLOCKS_PER_US (CLOCKS_PER_SEC / 1000000)
 
-long Int::comp_count = 0;
-
-std::ostream& operator<<(std::ostream& os, const Int& i) {
-  os << i.data;
-  return os;
-}
-
-template <typename Container>
-void print(Container& container) {
-  std::cout << "{";
-  for (typename Container::iterator it = container.begin();
-       it != container.end(); ++it) {
-    std::cout << " " << *it;
-  }
-  std::cout << "}";
-  std::cout << std::endl;
-}
-
+// Print a vector
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
   for (typename std::vector<T>::const_iterator it = v.begin(); it != v.end();
@@ -48,53 +20,78 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
   return os;
 }
 
+void print_elapsed(std::clock_t elapsed) {
+  double elapsed_secs = static_cast<double>(elapsed) / CLOCKS_PER_SEC;
+  double elapsed_ms = static_cast<double>(elapsed) / CLOCKS_PER_MS;
+  double elapsed_us = static_cast<double>(elapsed) / CLOCKS_PER_US;
+  if (elapsed > CLOCKS_PER_SEC) {
+    std::cout << std::setw(8) << elapsed_secs << " s" << std::endl;
+  } else if (elapsed > CLOCKS_PER_MS) {
+    std::cout << std::setw(8) << elapsed_ms << " ms" << std::endl;
+  } else {
+    std::cout << std::setw(8) << elapsed_us << " us" << std::endl;
+  }
+}
+
+// Test the sort function
 template <typename T>
 void test_sort(std::vector<T>& orig) {
   std::cout << "Before: " << orig << std::endl;
-  // Sort vector
   {
     std::vector<T> v(orig);
     std::vector<T> v2(orig);
     std::list<T> l(orig.begin(), orig.end());
 
-    double elapsed_secs_vector, elapsed_secs_list, elapsed_secs_std_sort;
+    std::clock_t elapsed_vec, elapsed_list;
+#if BENCH
+    std::clock_t elapsed_std_sort;
     long comp_count_fjmi, comp_count_std_sort;
+#endif
+    // Sort Vector with Ford-Johnson Algorithm
     {
       Int::comp_count = 0;
       std::clock_t start = std::clock();  // Start the clock
       PMergeMe::merge_insert_sort(v);
       std::clock_t end = std::clock();  // Stop the clock
+#if BENCH
       comp_count_fjmi = Int::comp_count;
-      elapsed_secs_vector = static_cast<double>(end - start) / CLOCKS_PER_SEC;
+#endif
+      elapsed_vec = end - start;
     }
+    // Sort List with Ford-Johnson Algorithm
     {
       std::clock_t start = std::clock();  // Start the clock
       PMergeMe::merge_insert_sort(l);
       std::clock_t end = std::clock();  // Stop the clock
-      elapsed_secs_list = static_cast<double>(end - start) / CLOCKS_PER_SEC;
+      elapsed_list = end - start;
     }
+    // Sort Vector with std::sort
+#if BENCH
     {
       Int::comp_count = 0;
       std::clock_t start = std::clock();  // Start the clock
       std::sort(v2.begin(), v2.end());
       std::clock_t end = std::clock();  // Stop the clock
       comp_count_std_sort = Int::comp_count;
-      elapsed_secs_std_sort = static_cast<double>(end - start) / CLOCKS_PER_SEC;
+      elapsed_std_sort = end - start;
     }
+#endif
     std::cout << "After:  " << v << std::endl;
     std::cout << "Time to process a range of " << std::setw(8) << v.size()
-              << " elements with std::vector : " << std::setw(8)
-              << elapsed_secs_vector << " s" << std::endl;
+              << " elements with std::vector : " ;
+    print_elapsed(elapsed_vec);
     std::cout << "Time to process a range of " << std::setw(8) << v.size()
-              << " elements with std::list   : " << std::setw(8)
-              << elapsed_secs_list << " s" << std::endl;
+              << " elements with std::list   : " ;
+    print_elapsed(elapsed_list);
+#if BENCH
     std::cout << "Time to process a range of " << std::setw(8) << v.size()
-              << " elements with std::sort   : " << std::setw(8)
-              << elapsed_secs_std_sort << " s" << std::endl;
+              << " elements with std::sort   : " ;
+    print_elapsed(elapsed_std_sort);
     std::cout << "Number of comparisons with Ford-Johnson Algorithm : "
               << std::setw(8) << comp_count_fjmi << std::endl;
     std::cout << "Number of comparisons with std::sort              : "
               << std::setw(8) << comp_count_std_sort << std::endl;
+#endif
 #if DEBUG
     std::cout << "vector is_sorted: " << std::boolalpha
               << std::is_sorted(v.begin(), v.end()) << std::endl;

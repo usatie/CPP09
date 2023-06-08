@@ -2,6 +2,9 @@
 #define RANDOM_ACCESS_SORT_IMPL_TPP
 
 #include "PMergeMe.hpp"
+#if DEBUG
+#include "debug.hpp"
+#endif
 ////////////////////////////////////////////////////////////////////////////
 // Ford Johnson Merge Insertion Sort
 template <typename Iterator>
